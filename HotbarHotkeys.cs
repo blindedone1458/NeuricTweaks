@@ -65,7 +65,7 @@ namespace NeuricTweaks
                 hotkeys[i] = new Hotkey
                 {
                     hotkey = config("4 - Hotbar Hotkeys", $"Hotbar Slot {i+1} - Key", new KeyboardShortcut(KeyCode.None), $"Hotkey for Hotbar Slot {i+1}"),
-                    label = config("4 - Hotbar Hotkeys", $"Hotbar Slot {i+1} - Label", (i+1).ToString(), $"Label for Hotbar Slot {i+1}. Empty will use the assigned Key."),
+                    label = config("4 - Hotbar Hotkeys", $"Hotbar Slot {i+1} - Label", (i+1).ToString(), $"Label for Hotbar Slot {i+1}. Empty will use the assigned Key. Unicode does work if you do \\u####"),
                     replaceDef = config("4 - Hotbar Hotkeys", $"Hotbar Slot {i+1} - Replace", NeuricTweaks.Toggle.On, "If enabled, Hotkey will replace default hotkey. If disabled, default hotkey and one set here will both work.")
                 };
 
@@ -83,12 +83,14 @@ namespace NeuricTweaks
         // postfix patch Player.Update
         private static void Patch_Hotkeys(Player __instance)
         {
-
-            for (var i = 0; i < defaultNumKeys; i++)
+            if (__instance.TakeInput())
             {
-                if (ZInput.GetKeyDown( hotkeys[i].hotkey.Value.MainKey))
+                for (var i = 0; i < defaultNumKeys; i++)
                 {
-                    __instance.UseHotbarItem((i+1) * 10);
+                    if (ZInput.GetKeyDown(hotkeys[i].hotkey.Value.MainKey))
+                    {
+                        __instance.UseHotbarItem((i + 1) * 10);
+                    }
                 }
             }
         }
