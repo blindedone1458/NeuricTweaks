@@ -27,6 +27,8 @@ namespace NeuricTweaks
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
 
         public static NeuricTweaks _instance;
+        private static SailingTweaks _sailingTweaks;
+        private static HotbarHotkeys _hotbarHotkeys;
 
         public enum Toggle
         {
@@ -46,8 +48,8 @@ namespace NeuricTweaks
             //_ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
 
             // Plugin startup logic
-            _ = new SailingTweaks();
-            _ = new HotbarHotkeys();
+            _sailingTweaks = new SailingTweaks();
+            _hotbarHotkeys = new HotbarHotkeys();
 
             tweakLogger.LogInfo($"Plugin {PLUGIN_GUID} is loaded!");
             BepInEx.Logging.Logger.Sources.Remove(tweakLogger);
@@ -60,6 +62,11 @@ namespace NeuricTweaks
         private void OnDestroy()
         {
             Config.Save();
+        }
+
+        private void Update()
+        {
+            _hotbarHotkeys.Update();
         }
 
         private void SetupWatcher()

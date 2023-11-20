@@ -74,22 +74,27 @@ namespace NeuricTweaks
             }
 
             Harmony _harmony = new(NeuricTweaks.PLUGIN_NAME + ".HotbarHotkeys");
-            _harmony.Patch(AccessTools.DeclaredMethod(typeof(Player), nameof(Player.Update)), postfix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(HotbarHotkeys), nameof(Patch_Hotkeys))));
+            //_harmony.Patch(AccessTools.DeclaredMethod(typeof(Player), nameof(Player.Update)), postfix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(HotbarHotkeys), nameof(Patch_Hotkeys))));
             _harmony.Patch(AccessTools.DeclaredMethod(typeof(Player), nameof(Player.UseHotbarItem)), prefix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(HotbarHotkeys), nameof(Patch_HotbarSelection))));
             _harmony.Patch(AccessTools.DeclaredMethod(typeof(HotkeyBar), nameof(HotkeyBar.Update)), postfix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(HotbarHotkeys), nameof(Patch_HotkeyLabels))));
 
         }
 
-        // postfix patch Player.Update
-        private static void Patch_Hotkeys(Player __instance)
+        internal void Update()
         {
-            if (__instance.TakeInput())
+            Check_Hotkeys();
+        }
+
+        private static void Check_Hotkeys()
+        {
+            Player player = Player.m_localPlayer;
+            if (player != null && player.TakeInput())
             {
                 for (var i = 0; i < defaultNumKeys; i++)
                 {
                     if (ZInput.GetKeyDown(hotkeys[i].hotkey.Value.MainKey))
                     {
-                        __instance.UseHotbarItem((i + 1) * 10);
+                        player.UseHotbarItem((i + 1) * 10);
                     }
                 }
             }
