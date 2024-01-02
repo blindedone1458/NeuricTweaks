@@ -15,7 +15,7 @@ namespace NeuricTweaks
     {
         internal const string PLUGIN_GUID = "neuric.valheim.tweaks";
         internal const string PLUGIN_NAME = "NeuricTweaks";
-        internal const string PLUGIN_VERSION = "1.0.0";
+        internal const string PLUGIN_VERSION = "1.0.2";
         internal const string PLUGIN_AUTHOR = "Neuric";
 
         private ConfigEntry<Toggle> _serverConfigLocked = null!;
