@@ -7,13 +7,17 @@ using System.Text;
 using System.Linq;
 using HarmonyLib;
 using BepInEx.Logging;
+using UnityEngine;
 
 namespace NeuricTweaks
 {
     internal class SailingTweaks
     {
-        private static ConfigEntry<float> sailSpeedMultHalf = config("2 - Sailing", "Half Sail Speed Mult", 1.0f, "Multiplier applied when sail is at half.");
-        private static ConfigEntry<float> sailSpeedMultFull = config("2 - Sailing", "Full Sail Speed Mult", 1.0f, "Multiplier applied when sail is fully open.");
+        private static ConfigEntry<float> sailForceMultHalf = config("2 - Sailing", "Half Sail Force Mult", 1.0f, "Sail Force Multiplier applied when sail is at half.");
+        private static ConfigEntry<float> sailForceMultFull = config("2 - Sailing", "Full Sail Force Mult", 1.0f, "Sail Force Multiplier applied when sail is fully open.");
+
+        private static ConfigEntry<float> sailSpeedMultHalf = config("2 - Sailing", "Half Sail Speed Mult", 1.0f, "Sail Speed Multiplier applied when sail is at half.");
+        private static ConfigEntry<float> sailSpeedMultFull = config("2 - Sailing", "Full Sail Speed Mult", 1.0f, "Sail Speed Multiplier applied when sail is fully open.");
 
         private static ConfigEntry<NeuricTweaks.Toggle> rowSpeedPerPlayer = config("3 - Rowing", "Rowing Mult Per Player", NeuricTweaks.Toggle.On, "When Enabled, 'Rowing_Speed_Mult' will be also multiplied by number of players in the Ship.");
         private static ConfigEntry<float> rowSpeedMult = config("3 - Rowing", "Rowing Speed Mult", 1.0f, "Multiplier applied to rudder speed.");
@@ -66,23 +70,35 @@ namespace NeuricTweaks
             NeuricTweaks.Log("Patching Sailing Speeds");
             Harmony _harmony = new(NeuricTweaks.PLUGIN_NAME + ".SailingTweaks");
             _harmony.Patch(AccessTools.DeclaredMethod(typeof(Ship), nameof(Ship.GetSailForce)), prefix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(SailingTweaks), nameof(Patch_SailForce))));
+            _harmony.Patch(AccessTools.DeclaredMethod(typeof(Ship), nameof(Ship.GetSailForce)), postfix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(SailingTweaks), nameof(Patch_SailSpeed))));
             _harmony.Patch(AccessTools.DeclaredMethod(typeof(Ship), nameof(Ship.Start)), prefix: new HarmonyMethod(AccessTools.DeclaredMethod(typeof(SailingTweaks), nameof(Patch_RudderSpeed))));
-
+            
         }
 
         private static void Patch_SailForce(Ship __instance)
         {
-            NeuricTweaks.LogInfo("Ship sail force factor: " + __instance.m_sailForceFactor);
-
             if (__instance.m_speed == Ship.Speed.Half)
             {
-                __instance.m_sailForceFactor = defSailForceFactor * sailSpeedMultHalf.Value;
+                __instance.m_sailForceFactor = defSailForceFactor * sailForceMultHalf.Value;
             }
             else if (__instance.m_speed == Ship.Speed.Full)
             {
-                __instance.m_sailForceFactor = defSailForceFactor * sailSpeedMultFull.Value;
+                __instance.m_sailForceFactor = defSailForceFactor * sailForceMultFull.Value;
             }
-            NeuricTweaks.LogInfo("Updated ship sail force factor: " + __instance.m_sailForceFactor);
+        }
+
+        private static void Patch_SailSpeed(Ship __instance, ref Vector3 __result)
+        {
+            if (__instance.m_speed == Ship.Speed.Half)
+            {
+                __result.x *= sailSpeedMultHalf.Value;
+                __result.z *= sailSpeedMultHalf.Value;
+            }
+            else if (__instance.m_speed == Ship.Speed.Full)
+            {
+                __result.x *= sailSpeedMultFull.Value;
+                __result.z *= sailSpeedMultFull.Value;
+            }
         }
 
         private static void Patch_RudderSpeed(Ship __instance)

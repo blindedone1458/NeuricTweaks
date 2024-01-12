@@ -5,3 +5,5 @@
 /.vs/NeuricTweaks
 /bin/Debug
 /obj/Debug
+/bin/Release
+/obj/Release
